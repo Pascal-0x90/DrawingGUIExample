@@ -1,4 +1,6 @@
 
+
+
 // Assignment #: Arizona State University CSE205 #7
 //         Name: Nathan Smith
 //    StudentID: 1211898087
@@ -15,21 +17,20 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.geometry.Insets;
 import java.util.ArrayList;
 import javafx.geometry.Pos;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.shape.Path;
 
 public class DrawPane extends BorderPane {
 
@@ -84,7 +85,7 @@ public class DrawPane extends BorderPane {
         //canvas is a Pane where we will draw rectagles and circles on it
         canvas = new Pane();
         canvas.setStyle("-fx-background-color: beige;");
-
+        
         //initialize the remaining instance variables and set up
         //the layout
         vb = new VBox();
@@ -103,8 +104,9 @@ public class DrawPane extends BorderPane {
         vb.setPadding(new Insets(10, 10, 10, 10));
         vb.setSpacing(40);
         vb.setStyle("-fx-border-color: black;");
-
-        this.setCenter(canvas);
+        
+        
+        this.setCenter(canvas);        
         this.setLeft(vb);
         this.setBottom(hb);
 
@@ -133,7 +135,14 @@ public class DrawPane extends BorderPane {
             //to check whether the mouse key is pressed, dragged or released
             //write your own codes here
             //----
-
+            Rectangle clip = new Rectangle();
+            clip.setWidth(DrawPane.this.getWidth()-vb.getBaselineOffset()+2);
+            clip.setHeight(DrawPane.this.getHeight()-hb.getHeight());
+            System.out.println("H: " + clip.getHeight() + " W: " + clip.getWidth());
+            clip.setY(0);
+            clip.setX(vb.getBaselineOffset()- vb.getWidth());
+            canvas.setClip(clip);
+            
             if (rbRect.isSelected()) {
                 if (event.getEventType().equals(MouseEvent.MOUSE_PRESSED)) {
                     rect = new Rectangle();
@@ -141,6 +150,7 @@ public class DrawPane extends BorderPane {
                     rect.setFill(Color.WHITE);
                     rect.setX(event.getX());
                     rect.setY(event.getY());
+                    
                     //System.out.println("X: " + rect.getX() + " Y: " + rect.getY());
 
                 } else if (event.getEventType().equals(MouseEvent.MOUSE_DRAGGED)) {
@@ -182,16 +192,18 @@ public class DrawPane extends BorderPane {
                         }
                     }
                     try{
-                    canvas.getChildren().add(rect);
-                    canvas.getChildren().addAll(shapeList);     // checking for some errors but basically just adding to the canvas
+                        
+                    canvas.getChildren().add(rect);   // checking for some errors but basically just adding to the canvas
+                    
                     }
                     catch( IllegalArgumentException e){
                         ;
                     }
 
                 } else if (event.getEventType().equals(MouseEvent.MOUSE_RELEASED)) {
-                    shapeList.add(rect);
                     rect.setFill(pickedColor);
+                    shapeList.add(rect);
+                                        
                     try{
                     canvas.getChildren().addAll(shapeList);
                     }
