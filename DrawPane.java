@@ -1,5 +1,4 @@
 
-
 // Assignment #: Arizona State University CSE205 #7
 //         Name: Nathan Smith
 //    StudentID: 1211898087
@@ -23,7 +22,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
@@ -46,15 +44,10 @@ public class DrawPane extends BorderPane {
     //----
     private final HBox hb;
     private final VBox vb;
-    private final TilePane tp;
-    private final BorderPane bp;
     private final ToggleGroup tg;
     private Rectangle rect;
     private Circle circle;
-    private final HBox hb2;
-    private final FlowPane fp;
     private Color pickedColor;
-    private String selectShape;
 
     //Constructor
     public DrawPane() {
@@ -95,17 +88,13 @@ public class DrawPane extends BorderPane {
         //initialize the remaining instance variables and set up
         //the layout
         vb = new VBox();
-        tp = new TilePane();
-        bp = new BorderPane();
         hb = new HBox();
-        hb2 = new HBox();
-        fp = new FlowPane();
         pickedColor = Color.BLACK;
 
         hb.getChildren().addAll(undoBtn, eraseBtn);
         hb.setAlignment(Pos.CENTER);
         hb.setStyle("-fx-border-color: black;");
-        
+
         hb.setPadding(new Insets(10, 10, 10, 10));
         hb.setSpacing(10);
 
@@ -115,14 +104,12 @@ public class DrawPane extends BorderPane {
         vb.setSpacing(40);
         vb.setStyle("-fx-border-color: black;");
 
-        
         this.setCenter(canvas);
         this.setLeft(vb);
         this.setBottom(hb);
 
         //Step #3: Register the source nodes with its handler objects
         ButtonHandler bh = new ButtonHandler();
-        ShapeHandler sh = new ShapeHandler();
         ColorHandler ch = new ColorHandler();
         MouseHandler mh = new MouseHandler();
 
@@ -134,8 +121,6 @@ public class DrawPane extends BorderPane {
         undoBtn.setOnAction(bh);
         eraseBtn.setOnAction(bh);
         colorCombo.setOnAction(ch);
-        rbRect.setOnAction(sh);
-        rbCircle.setOnAction(sh);
 
     }
 
@@ -156,84 +141,100 @@ public class DrawPane extends BorderPane {
                     rect.setFill(Color.WHITE);
                     rect.setX(event.getX());
                     rect.setY(event.getY());
-                    System.out.println("X: " + rect.getX() + " Y: " + rect.getY());
+                    //System.out.println("X: " + rect.getX() + " Y: " + rect.getY());
 
                 } else if (event.getEventType().equals(MouseEvent.MOUSE_DRAGGED)) {
-                    
-                    Double dx = event.getX() - rect.getX();
+
+                    Double dx = event.getX() - rect.getX(); // Using these to get the change in x between the reference point and the mouse coordinates
                     Double dy = event.getY() - rect.getY();
                     
-                    if(dx < 0) {
-                        if(dy <0){
+                    /*
+                    The next section uses the variables made above. Basically, if we are messing with the positive
+                    y and positive x coordinate difference, then we can draw to the bottom right from the reference
+                    point.
+                    If either of the differences are negative or both are, then we will be drawing in the respective 
+                    quadrants with respect to the reference point. I.E if x= - y=+ then bottom left, x=- y=- top left,
+                    x=+ y=- top right, and latter, y=+ x=+ bottom right
+                    */
+                    if (dx < 0) {                           
+                        if (dy < 0) {
                             rect.setTranslateX(dx);
                             rect.setWidth(-dx);
                             rect.setTranslateY(dy);
                             rect.setHeight(-dy);
-                        }
-                        else if(dy > 0){
+                        } else if (dy > 0) {
                             rect.setTranslateX(dx);
                             rect.setWidth(-dx);
                             rect.setTranslateY(0);
                             rect.setHeight(dy);
                         }
-                    }
-                    else if(dx > 0){
-                        if(dy <0){
+                    } else if (dx > 0) {
+                        if (dy < 0) {
                             rect.setTranslateX(0);
                             rect.setWidth(dx);
                             rect.setTranslateY(dy);
                             rect.setHeight(-dy);
-                        }
-                        else if(dy > 0){
+                        } else if (dy > 0) {
                             rect.setTranslateX(0);
                             rect.setWidth(dx);
                             rect.setTranslateY(0);
                             rect.setHeight(dy);
                         }
                     }
-                    
-                    
+                    try{
                     canvas.getChildren().add(rect);
+                    canvas.getChildren().addAll(shapeList);     // checking for some errors but basically just adding to the canvas
+                    }
+                    catch( IllegalArgumentException e){
+                        ;
+                    }
 
                 } else if (event.getEventType().equals(MouseEvent.MOUSE_RELEASED)) {
                     shapeList.add(rect);
                     rect.setFill(pickedColor);
+                    try{
                     canvas.getChildren().addAll(shapeList);
-                    System.out.println(shapeList.size());
-                    
+                    }
+                    catch( IllegalArgumentException e){
+                        ;
+                    }
+                    //System.out.println(shapeList.size());
+
                 }
-            }
-            
-            else if(rbCircle.isSelected()){
-                if(event.getEventType().equals(MouseEvent.MOUSE_PRESSED)){
+            } else if (rbCircle.isSelected()) {
+                /*
+                Most of the concepts used in this method are similar to what was used for the rectangle.
+                However, in regards to drawing, there is only needed the radius which then allows one to draw
+                a circle to whatever size from whatever reference point in any direction
+                */
+                if (event.getEventType().equals(MouseEvent.MOUSE_PRESSED)) {
                     circle = new Circle();
                     circle.setStroke(Color.BLACK);
                     circle.setFill(Color.WHITE);
                     circle.setCenterX(event.getX());
                     circle.setCenterY(event.getY());
-                    System.out.println("X: " + circle.getCenterX() + " Y: " + circle.getCenterY()  );
-                }
-                else if (event.getEventType().equals(MouseEvent.MOUSE_DRAGGED)){
-                    
+                    System.out.println("X: " + circle.getCenterX() + " Y: " + circle.getCenterY());
+                } else if (event.getEventType().equals(MouseEvent.MOUSE_DRAGGED)) {
+
                     Double dx = Math.abs(event.getX() - circle.getCenterX());
                     Double dy = event.getY() - circle.getCenterX();
-                    
+
                     circle.setRadius(dx);
                     canvas.getChildren().add(circle);
-                }
-                    
-                    else if (event.getEventType().equals(MouseEvent.MOUSE_RELEASED)) {
+                } else if (event.getEventType().equals(MouseEvent.MOUSE_RELEASED)) {
                     shapeList.add(circle);
                     circle.setFill(pickedColor);
+                    try{
                     canvas.getChildren().addAll(shapeList);
-                    System.out.println(shapeList.size());
+                    }
+                    catch(IllegalArgumentException e){
+                        ;
+                    }
+                    //System.out.println(shapeList.size());
+                    
                     shapeList.clear();
                 }
-                    
-                
-                
-                
-                
+
             }
 
         }//end handle()
@@ -246,8 +247,10 @@ public class DrawPane extends BorderPane {
             //write your codes here
             //----
             if (event.getSource() == undoBtn) {
-                canvas.getChildren().remove(canvas.getChildren().size()-1);
+                // this will take out the last added shape
+                canvas.getChildren().remove(canvas.getChildren().size() - 1);
             } else if (event.getSource() == eraseBtn) {
+                // this will clear the entire canvas
                 canvas.getChildren().clear();
             } else {
 
@@ -256,30 +259,13 @@ public class DrawPane extends BorderPane {
         }
     }//end ButtonHandler
 
-    //Step #2(C)- A handler class used to handle events from the two radio buttons
-    private class ShapeHandler implements EventHandler<ActionEvent> {
-
-        public void handle(ActionEvent event) {
-            //write your own codes here
-            //----
-            if (event.getSource() == rbRect) {
-                selectShape = "Rectangle";
-
-            } else if (event.getSource() == rbCircle) {
-                selectShape = "Circle";
-            } else {
-
-            }
-
-        }
-    }//end ShapeHandler
-
     //Step #2(D)- A handler class used to handle colors from the combo box
     private class ColorHandler implements EventHandler<ActionEvent> {
 
         public void handle(ActionEvent event) {
             //write your own codes here
             //----
+            //This will give a color value and allow the attribute from the colorCombo to be brought in and set for whatever shape
             pickedColor = Color.valueOf(colorCombo.getSelectionModel().getSelectedItem().toUpperCase());
             System.out.println(pickedColor.toString());
         }
@@ -292,4 +278,4 @@ public class DrawPane extends BorderPane {
 //       _/_/_/_|_\_\) /
 //     '-<_><_><_><_>=/\
 //       `/_/====/_/-'\_\
-//        ""     ""    ""
+//        ""     ""    "" // this is ted the turtle
